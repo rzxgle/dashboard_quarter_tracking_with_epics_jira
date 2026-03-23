@@ -31,11 +31,13 @@ def calculate_team_progress(epic_progress):
         )
         .reset_index()
     )
-
+    
     team_progress["progress"] = (
-        team_progress["completed_items"] /
-        team_progress["total_items"]
-    ) * 100
+    team_progress["completed_items"] /
+    team_progress["total_items"]
+    )
+
+    team_progress["progress"] = team_progress["progress"].fillna(0) * 100
 
     return team_progress
 

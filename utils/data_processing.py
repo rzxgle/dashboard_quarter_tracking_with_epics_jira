@@ -50,4 +50,18 @@ def issues_to_dataframe(issues):
             "priority": priority
         })
 
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    
+    if df.empty:
+        df = pd.DataFrame(columns=[
+            "issue",
+            "summary",
+            "epic",
+            "team",
+            "status",
+            "done",
+            "flagged",
+            "priority"
+        ])
+
+    return df

@@ -19,41 +19,23 @@ def render_teams(team_progress, epic_progress, epic_map, df):
             epic_key = epic["epic"]
             epic_name = epic_map.get(epic_key, "")
 
-            done = epic["completed_items"]
-            total = epic["total_items"]
-            progress = epic["progress"]
-            
-            epic_all_items = df[df["epic"] == epic_key]
-
-            epic_owner_team = (
-                epic_all_items["team"]
-                .value_counts()
-                .idxmax()
-            )
-
-            team_label = ""
-
-            if epic_owner_team != team_name:
-                team_label = f" [{epic_owner_team}]"
+            done = int(epic["completed_items"])
+            total = int(epic["total_items"])
+            progress = float(epic["progress"])
 
             epic_items = df[
                 (df["epic"] == epic_key) &
                 (df["team"] == team_name)
             ]
 
-            done_count = epic_items[epic_items["done"] == 1].shape[0]
-
-            in_approval_count = epic_items[
-                epic_items["status"].apply(is_in_approval)
-            ].shape[0]
-
-            in_progress_count = epic_items[
-                epic_items["status"].apply(is_in_progress)
-            ].shape[0]
-
-            todo_count = epic_items.shape[0] - done_count - in_progress_count - in_approval_count
-
+            is_empty_epic = total == 0
             is_completed = done == total and total > 0
+
+            epic_owner_team = epic.get("epic_owner_team", team_name)
+
+            team_label = ""
+            if epic_owner_team != team_name:
+                team_label = f" [{epic_owner_team}]"
 
             epic_url = f"https://medcel.atlassian.net/browse/{epic_key}"
 
@@ -74,56 +56,73 @@ def render_teams(team_progress, epic_progress, epic_map, df):
 
             st.markdown(epic_title, unsafe_allow_html=True)
 
-            st.markdown(
-                f"✅ **FEITO:** {done_count} &nbsp;&nbsp; "
-                f"🟣 **EM HOMOLOGAÇÃO:** {in_approval_count} &nbsp;&nbsp; "
-                f"🔵 **EM ANDAMENTO:** {in_progress_count} &nbsp;&nbsp; "
-                f"⚪ **A FAZER:** {todo_count}"
-            )
-            
-            epic_total_items = df[df["epic"] == epic_key].shape[0]
+            if is_empty_epic:
+                st.caption("📝 Este épico ainda não possui histórias cadastradas")
+            else:
+                done_count = epic_items[epic_items["done"] == 1].shape[0]
 
-            if epic_total_items != total:
+                in_approval_count = epic_items[
+                    epic_items["status"].apply(is_in_approval)
+                ].shape[0]
+
+                in_progress_count = epic_items[
+                    epic_items["status"].apply(is_in_progress)
+                ].shape[0]
+
+                todo_count = epic_items.shape[0] - done_count - in_progress_count - in_approval_count
+
+                st.markdown(
+                    f"✅ **FEITO:** {done_count} &nbsp;&nbsp; "
+                    f"🟣 **EM HOMOLOGAÇÃO:** {in_approval_count} &nbsp;&nbsp; "
+                    f"🔵 **EM ANDAMENTO:** {in_progress_count} &nbsp;&nbsp; "
+                    f"⚪ **A FAZER:** {todo_count}"
+                )
+
+            epic_total_items = df[df["epic"] == epic_key].shape[0]
+            if epic_total_items != total and total > 0:
                 st.caption("📎 Épico com atividades compartilhadas")
 
-            st.progress(progress / 100)
-            
+            if not is_empty_epic:
+                st.progress(progress / 100)
+
             blocked_count = epic_items[epic_items["flagged"] == True].shape[0]
 
             if blocked_count > 0:
                 st.warning(f"🚧 {blocked_count} item(ns) bloqueado(s) neste épico")
 
-            with st.expander("Ver itens do épico"):
-                
-                epic_items_sorted = epic_items.sort_values("priority")
+            if not epic_items.empty:
+                with st.expander("Ver itens do épico"):
 
-                for _, item in epic_items_sorted.iterrows():
+                    epic_items_sorted = epic_items.sort_values("priority")
 
-                    is_blocked = item.get("flagged", False)
+                    for _, item in epic_items_sorted.iterrows():
 
-                    status = item["status"]
-                    
-                    if is_blocked:
-                        icon = "🚧"
-                    elif item["done"]:
-                        icon = "✅"
-                    elif is_in_approval(status):
-                        icon = "🟣"
-                    elif is_in_progress(status):
-                        icon = "🔵"
-                    else:
-                        icon = "⚪"
+                        is_blocked = item.get("flagged", False)
+                        status = item["status"]
 
-                    issue_key = item["issue"]
-                    issue_url = f"https://medcel.atlassian.net/browse/{issue_key}"                    
+                        if is_blocked:
+                            icon = "🚧"
+                        elif item["done"]:
+                            icon = "✅"
+                        elif is_in_approval(status):
+                            icon = "🟣"
+                        elif is_in_progress(status):
+                            icon = "🔵"
+                        else:
+                            icon = "⚪"
 
-                    blocked_label = ""
-                    if is_blocked:
-                        blocked_label = " 🚧 **BLOQUEADO**"
+                        issue_key = item["issue"]
+                        issue_url = f"https://medcel.atlassian.net/browse/{issue_key}"
 
-                    st.markdown(
-                        f"{icon} **[{issue_key}]({issue_url})** - {item['summary']}{blocked_label}  \n"
-                        f"Status: `{status}`"
-                    )
+                        blocked_label = ""
+                        if is_blocked:
+                            blocked_label = " 🚧 **BLOQUEADO**"
+
+                        st.markdown(
+                            f"{icon} **[{issue_key}]({issue_url})** - {item['summary']}{blocked_label}  \n"
+                            f"Status: `{status}`"
+                        )
+            elif not is_empty_epic:
+                st.caption("Sem itens para exibir")
 
         st.divider()

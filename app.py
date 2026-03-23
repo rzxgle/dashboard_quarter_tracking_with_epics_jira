@@ -1,6 +1,5 @@
-import os
 import streamlit as st
-
+import pandas as pd
 from services.jira_client import fetch_issues
 from utils.data_processing import issues_to_dataframe
 from domain.safe_metrics import *
@@ -8,7 +7,7 @@ from ui.team_view import render_teams
 
 st.set_page_config(
     page_title="ART Progress Dashboard",
-    page_icon="📊", 
+    page_icon="📊",
     layout="wide"
 )
 
@@ -22,7 +21,7 @@ label = st.text_input(
 if not label:
     st.warning("Informe uma label para buscar os épicos.")
     st.stop()
-    
+
 if st.button("🔄 Atualizar dados"):
     st.cache_data.clear()
     st.rerun()
@@ -32,18 +31,43 @@ labels = {label} AND issuetype = Epic
 """
 
 with st.spinner("Carregando dados do Jira..."):
-    issues, epic_map = fetch_issues(jql)
+    issues, epic_map, epic_df = fetch_issues(jql)
 
 df = issues_to_dataframe(issues)
 
-if df.empty:
-    st.warning("⚠️ Ainda não há histórias cadastradas para os épicos selecionados.")
-    st.stop()
-
 epic_progress = calculate_epic_progress(df)
+
+epic_df_owner = epic_df.rename(columns={"team": "epic_owner_team"})
+
+epic_progress = epic_progress.merge(
+    epic_df_owner,
+    on="epic",
+    how="left"
+)
+
+epics_with_children = set(epic_progress["epic"].unique())
+
+empty_epics = epic_df[~epic_df["epic"].isin(epics_with_children)].copy()
+
+if not empty_epics.empty:
+    empty_epics["epic_owner_team"] = empty_epics["team"]
+    empty_epics["completed_items"] = 0
+    empty_epics["total_items"] = 0
+    empty_epics["progress"] = 0.0
+
+    epic_progress = pd.concat(
+        [epic_progress, empty_epics],
+        ignore_index=True,
+        sort=False
+    )
+
+epic_progress["completed_items"] = epic_progress["completed_items"].fillna(0).astype(int)
+epic_progress["total_items"] = epic_progress["total_items"].fillna(0).astype(int)
+epic_progress["progress"] = epic_progress["progress"].fillna(0.0)
+
 team_progress = calculate_team_progress(epic_progress)
 
-teams = sorted(team_progress["team"].unique())
+teams = sorted(team_progress["team"].dropna().unique())
 
 selected_teams = st.sidebar.multiselect(
     "Filtrar Squads",
@@ -60,7 +84,6 @@ filtered_team_progress = team_progress[
 ]
 
 cluster_progress = calculate_cluster_progress(filtered_team_progress)
-
 quarter_time_progress = calculate_quarter_time_progress()
 
 squads_at_risk, epics_at_risk, total_epics = calculate_risk_metrics(

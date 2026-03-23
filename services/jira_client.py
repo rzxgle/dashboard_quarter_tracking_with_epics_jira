@@ -1,5 +1,6 @@
 import streamlit as st
 from jira import JIRA
+import pandas as pd
 from config import *
 
 
@@ -18,15 +19,28 @@ def fetch_issues(jql):
     epics = jira.search_issues(
         jql,
         maxResults=False,
-        fields=["summary"]
+        fields=["summary", TEAM_FIELD] 
     )
 
     epic_map = {epic.key: epic.fields.summary for epic in epics}
 
+    epic_data = []
+
+    for epic in epics:
+        team_obj = getattr(epic.fields, TEAM_FIELD, None)
+        team = team_obj.name if team_obj else "Unknown Team"
+
+        epic_data.append({
+            "epic": epic.key,
+            "team": team
+        })
+
+    epic_df = pd.DataFrame(epic_data)
+
     epic_keys = list(epic_map.keys())
 
     if not epic_keys:
-        return [], {}
+        return [], {}, epic_df
 
     epic_string = ",".join(epic_keys)
 
@@ -35,4 +49,4 @@ def fetch_issues(jql):
         maxResults=False
     )
 
-    return issues, epic_map
+    return issues, epic_map, epic_df
