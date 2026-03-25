@@ -22,6 +22,9 @@ def render_teams(team_progress, epic_progress, epic_map, df):
             done = int(epic["completed_items"])
             total = int(epic["total_items"])
             progress = float(epic["progress"])
+            
+            is_epic_at_risk = bool(epic.get("epic_risk", False))
+            epic_risk_reason = epic.get("epic_risk_reason", "")
 
             epic_items = df[
                 (df["epic"] == epic_key) &
@@ -39,18 +42,20 @@ def render_teams(team_progress, epic_progress, epic_map, df):
 
             epic_url = f"https://medcel.atlassian.net/browse/{epic_key}"
 
+            risk_label = " 🚨 Risco Sinalizado" if is_epic_at_risk else ""
+            
             if is_completed:
                 epic_title = f"""
                 <span style="font-size:18px; font-weight:700; color:#2e7d32;">
                 <a href="{epic_url}" target="_blank">{epic_key}</a>
-                - {epic_name} ({done}/{total}){team_label} ✅ 100%
+                - {epic_name} ({done}/{total}){team_label} ✅ 100% {risk_label}
                 </span>
                 """
             else:
                 epic_title = f"""
                 <span style="font-size:18px; font-weight:600;">
                 <a href="{epic_url}" target="_blank">{epic_key}</a>
-                - {epic_name} ({done}/{total}){team_label}
+                - {epic_name} ({done}/{total}){team_label} {risk_label}
                 </span>
                 """
 
@@ -72,7 +77,7 @@ def render_teams(team_progress, epic_progress, epic_map, df):
                 todo_count = epic_items.shape[0] - done_count - in_progress_count - in_approval_count
 
                 st.markdown(
-                    f"✅ **FEITO:** {done_count} &nbsp;&nbsp; "
+                    f"✅ **CONCLUÍDO:** {done_count} &nbsp;&nbsp; "
                     f"🟣 **EM HOMOLOGAÇÃO:** {in_approval_count} &nbsp;&nbsp; "
                     f"🔵 **EM ANDAMENTO:** {in_progress_count} &nbsp;&nbsp; "
                     f"⚪ **A FAZER:** {todo_count}"
@@ -81,6 +86,9 @@ def render_teams(team_progress, epic_progress, epic_map, df):
             epic_total_items = df[df["epic"] == epic_key].shape[0]
             if epic_total_items != total and total > 0:
                 st.caption("📎 Épico com atividades compartilhadas")
+                
+            if is_epic_at_risk and epic_risk_reason:
+                st.caption(f"🚨 Motivo do risco: {epic_risk_reason}")
 
             if not is_empty_epic:
                 st.progress(progress / 100)

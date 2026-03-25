@@ -70,7 +70,7 @@ def calculate_quarter_time_progress():
 def calculate_risk_metrics(epic_progress, team_progress, expected_progress):
 
     epics_at_risk = epic_progress[
-        epic_progress["progress"] < expected_progress
+        epic_progress["epic_risk"] == True
     ].shape[0]
 
     squads_at_risk = team_progress[

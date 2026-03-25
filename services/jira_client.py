@@ -19,7 +19,7 @@ def fetch_issues(jql):
     epics = jira.search_issues(
         jql,
         maxResults=False,
-        fields=["summary", TEAM_FIELD] 
+        fields=["summary", TEAM_FIELD, "customfield_11806", "customfield_11839"] 
     )
 
     epic_map = {epic.key: epic.fields.summary for epic in epics}
@@ -29,10 +29,15 @@ def fetch_issues(jql):
     for epic in epics:
         team_obj = getattr(epic.fields, TEAM_FIELD, None)
         team = team_obj.name if team_obj else "Unknown Team"
+        risk_obj = getattr(epic.fields, "customfield_11806", None)
+        risk_value = getattr(risk_obj, "value", None) if risk_obj else None
+        risk_reason = getattr(epic.fields, "customfield_11839", None)
 
         epic_data.append({
             "epic": epic.key,
-            "team": team
+            "team": team,
+            "epic_risk": risk_value == "Sim",
+            "epic_risk_reason": risk_reason if risk_reason else ""
         })
 
     epic_df = pd.DataFrame(epic_data)
