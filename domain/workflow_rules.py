@@ -1,12 +1,19 @@
 DONE_STATUS = [
     "Pronto para Prod",
     "Prod",
+    "Done",
+    "Deploy em PROD",
+    "PRONTO PARA ATIVAÇÃO DE VALOR",
+    "Pronto p/ Deploy STG",
+    "Ativação de valor",
+    "PRONTO PARA MEDIÇÃO",
     "Concluído"
 ]
 
 IN_PROGRESS_STATUS = [
     "Fazendo",
     "Desenvolvimento",
+    "EM ANDAMENTO",
     "Code Review",
     "Pronto para Testes",
     "Em QA",

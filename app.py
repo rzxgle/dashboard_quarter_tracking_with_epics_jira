@@ -96,8 +96,8 @@ col1, col2, col3, col4 = st.columns(4)
 
 col1.metric("Progresso de Épicos", f"{cluster_progress:.1f}%")
 col2.metric("% Tempo decorrido (quarter)", f"{quarter_time_progress:.1f}%")
-col3.metric("Potenciais squads em risco", squads_at_risk)
-col4.metric("Potenciais épicos em risco", f"{epics_at_risk} / {total_epics}")
+#col3.metric("Potenciais squads em risco", squads_at_risk)
+col3.metric("Épicos com risco sinalizado", f"{epics_at_risk} / {total_epics}")
 
 st.caption("⏱️ Dados atualizados a cada 5 minutos")
 
