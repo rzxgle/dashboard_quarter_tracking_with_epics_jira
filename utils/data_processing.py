@@ -29,7 +29,7 @@ def issues_to_dataframe(issues):
             flagged = False
             
         team_obj = getattr(issue.fields, TEAM_FIELD, None)
-        team = team_obj.name if team_obj else "Unknown Team"
+        team = team_obj.name if team_obj else "Team Desconhecido"
 
         #status_category = issue.fields.status.statusCategory.name
         #done = 1 if status_category == "Done" else 0
