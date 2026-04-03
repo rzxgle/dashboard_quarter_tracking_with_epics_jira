@@ -56,6 +56,18 @@ def render_teams(team_progress, epic_progress, epic_map, df):
             
             progress_label = f"{progress:.1f}%"
             
+            blocked_count = epic_items[epic_items["flagged"] == True].shape[0]
+
+            blocked_badge = ""
+
+            if blocked_count > 0:
+                blocked_badge = (
+                    f'<span style="margin-left:8px; font-size:12px; '
+                    f'background-color:#fef3c7; color:#92400e; '
+                    f'padding:2px 6px; border-radius:6px; font-weight:600;">'
+                    f'🚧 {blocked_count} bloqueado(s)</span>'
+                )
+            
             tooltip_text = (
                 "O cálculo de progresso não contabiliza cancelados ou inválidos, "
                 "sendo feito somente sobre a base de itens válidos."
@@ -77,14 +89,14 @@ def render_teams(team_progress, epic_progress, epic_map, df):
                 epic_title = f"""
                 <span style="font-size:18px; font-weight:700; color:#2e7d32;">
                 <a href="{epic_url}" target="_blank">{epic_key}</a>
-                - {epic_name} ({done}/{total}){team_label_html} — ✅ {progress_label} {risk_label}
+                - {epic_name} ({done}/{total}){team_label_html} — ✅ {progress_label} {risk_label} {blocked_badge}
                 </span>
                 """
             else:
                 epic_title = f"""
                 <span style="font-size:18px; font-weight:600;">
                 <a href="{epic_url}" target="_blank">{epic_key}</a>
-                - {epic_name} ({done}/{total}){team_label_html} — {progress_label} {risk_label}
+                - {epic_name} ({done}/{total}){team_label_html} — {progress_label} {risk_label} {blocked_badge}
                 </span>
                 """
 
@@ -123,11 +135,6 @@ def render_teams(team_progress, epic_progress, epic_map, df):
 
             if not is_empty_epic:
                 st.progress(progress / 100)
-
-            blocked_count = epic_items[epic_items["flagged"] == True].shape[0]
-
-            if blocked_count > 0:
-                st.warning(f"🚧 {blocked_count} item(ns) bloqueado(s) neste épico")
 
             if not epic_items.empty:
                 with st.expander("Ver itens do épico"):

@@ -28,7 +28,7 @@ def fetch_issues(jql):
 
     for epic in epics:
         team_obj = getattr(epic.fields, TEAM_FIELD, None)
-        team = team_obj.name if team_obj else "Unknown Team"
+        team = team_obj.name if team_obj else "Team Desconhecido"
         risk_obj = getattr(epic.fields, "customfield_11806", None)
         risk_value = getattr(risk_obj, "value", None) if risk_obj else None
         risk_reason = getattr(epic.fields, "customfield_11839", None)
