@@ -93,7 +93,7 @@ def render_teams(team_progress, epic_progress, epic_map, df):
                     '<span style="margin-left:8px; font-size:12px; '
                     'background-color:#dbeafe; color:#1d4ed8; '
                     'padding:2px 6px; border-radius:6px; font-weight:600;">'
-                    '🔁 Transbordo Quarter Anterior</span>'
+                    '🔁 Transbordo</span>'
                 )
             
             if is_completed:
