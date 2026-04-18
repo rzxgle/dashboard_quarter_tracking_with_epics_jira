@@ -101,13 +101,9 @@ roadmap_df = roadmap_df[roadmap_df["team"].isin(selected_teams)]
 summary_df = roadmap_df.drop_duplicates(subset=["epic"]).copy()
 
 total_epics = summary_df["epic"].nunique()
-
 epics_at_risk = summary_df[summary_df["epic_risk"] == True]["epic"].nunique()
-
 transbordo_count = summary_df[summary_df["is_transbordo"] == True]["epic"].nunique()
-
 completed_count = summary_df[summary_df["progress"] >= 100]["epic"].nunique()
-
 in_progress_count = summary_df[
     (summary_df["progress"] < 100)
 ]["epic"].nunique()

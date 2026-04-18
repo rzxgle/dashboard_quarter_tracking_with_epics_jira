@@ -14,6 +14,7 @@ def render_roadmap(roadmap_df, start_date=None, end_date=None):
         x_end="end_date",
         y="display_name",
         color="roadmap_status",
+        text="progress_label",
         color_discrete_map={
             "Em andamento": "#2563eb",
             "Concluído": "#16a34a",
@@ -24,13 +25,18 @@ def render_roadmap(roadmap_df, start_date=None, end_date=None):
             "team": True,
             "epic_full_name": True,
             "progress_label": True,
-            "start_date": True,
-            "end_date": True,
-            "epic_risk": True,
-            "is_transbordo": True,
-            "roadmap_status": True
+            "date_range_label": True,
+            "roadmap_status": True,
+            "risk_label": True,
+            "transbordo_label": True,
+            "start_date": False,
+            "end_date": False,
+            "epic_risk": False,
+            "is_transbordo": False
         }
     )
+    
+    fig.update_traces(textposition="inside")
 
     today = date.today()
 

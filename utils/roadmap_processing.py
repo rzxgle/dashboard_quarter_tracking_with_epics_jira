@@ -46,5 +46,19 @@ def build_roadmap_dataframe(epic_progress, epic_df, epic_map):
         by=["team", "start_date", "end_date", "epic"],
         ascending=[True, True, True, True]
     ).reset_index(drop=True)
+    
+    roadmap_df["risk_label"] = roadmap_df["epic_risk"].apply(
+    lambda x: "Sim" if x else "Não"
+    )
+
+    roadmap_df["transbordo_label"] = roadmap_df["is_transbordo"].apply(
+        lambda x: "Sim" if x else "Não"
+    )
+
+    roadmap_df["date_range_label"] = (
+        roadmap_df["start_date"].dt.strftime("%d/%m/%Y")
+        + " → "
+        + roadmap_df["end_date"].dt.strftime("%d/%m/%Y")
+    )
 
     return roadmap_df
